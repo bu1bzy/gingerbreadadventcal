@@ -8,14 +8,6 @@ export const Header = () => {
           
           <span className="font-display text-2xl md:text-3xl snow-text">Advent Calendar</span>
         </Link>
-        
-        <Link to="/create">
-          <Button variant="christmas" size="lg" className="gap-2">
-            <Gift className="w-5 h-5" />
-            <span className="hidden sm:inline">Create Calendar</span>
-            <span className="sm:hidden">Create</span>
-          </Button>
-        </Link>
       </nav>
     </header>;
 };

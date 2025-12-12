@@ -28,8 +28,8 @@ export const useTimezone = () => {
   return { timezone, timezoneLabel };
 };
 
-export const getUnlockedDays = (timezone: string): number[] => {
-  const now = new Date();
+export const getUnlockedDays = (timezone: string, nowOverride?: Date): number[] => {
+  const now = nowOverride ?? new Date();
   
   // Get current date in the calendar's timezone
   const formatter = new Intl.DateTimeFormat('en-US', {
@@ -44,6 +44,9 @@ export const getUnlockedDays = (timezone: string): number[] => {
   const day = parseInt(parts.find(p => p.type === 'day')?.value || '0');
   const year = parseInt(parts.find(p => p.type === 'year')?.value || '0');
   
+  // Doors start unlocking from December 14th
+  const START_DAY = 14;
+
   // Only unlock doors in December
   if (month !== 12) {
     // If before December, no doors unlocked
@@ -54,10 +57,12 @@ export const getUnlockedDays = (timezone: string): number[] => {
     // After December or new year, all doors available
     return Array.from({ length: 24 }, (_, i) => i + 1);
   }
-  
-  // In December, unlock days up to current day (max 24)
-  const unlockedCount = Math.min(day, 24);
-  return Array.from({ length: unlockedCount }, (_, i) => i + 1);
+
+  // In December, doors unlock starting from START_DAY
+  // Door 1 unlocks on Dec 14, Door 2 on Dec 15, etc.
+  const unlockedCount = Math.max(0, day - START_DAY + 1);
+  const cap = Math.min(unlockedCount, 24);
+  return Array.from({ length: cap }, (_, i) => i + 1);
 };
 
 // Common timezone options for the dropdown
