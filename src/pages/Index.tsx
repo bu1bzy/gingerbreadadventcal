@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Snowfall } from '@/components/Snowfall';
 import { Header } from '@/components/Header';
@@ -30,9 +30,31 @@ const Index = () => {
     "🔔 Jingle all the way!"
   ];
 
-  const [doorTexts, setDoorTexts] = useState(defaultTexts);
-  const [doorImages, setDoorImages] = useState<(string | null)[]>(Array(12).fill(null));
-  const [doorLinks, setDoorLinks] = useState<(string | null)[]>(Array(12).fill(null));
+  const [doorTexts, setDoorTexts] = useState(() => {
+    const saved = localStorage.getItem('doorTexts');
+    return saved ? JSON.parse(saved) : defaultTexts;
+  });
+  const [doorImages, setDoorImages] = useState<(string | null)[]>(() => {
+    const saved = localStorage.getItem('doorImages');
+    return saved ? JSON.parse(saved) : Array(12).fill(null);
+  });
+  const [doorLinks, setDoorLinks] = useState<(string | null)[]>(() => {
+    const saved = localStorage.getItem('doorLinks');
+    return saved ? JSON.parse(saved) : Array(12).fill(null);
+  });
+
+  // Save to localStorage whenever edits change
+  useEffect(() => {
+    localStorage.setItem('doorTexts', JSON.stringify(doorTexts));
+  }, [doorTexts]);
+
+  useEffect(() => {
+    localStorage.setItem('doorImages', JSON.stringify(doorImages));
+  }, [doorImages]);
+
+  useEffect(() => {
+    localStorage.setItem('doorLinks', JSON.stringify(doorLinks));
+  }, [doorLinks]);
 
   // Sample calendar with some example content
   const getDoorImages = (day: number) => {
