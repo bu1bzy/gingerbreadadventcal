@@ -9,16 +9,30 @@ const Index = () => {
   const [openedDays, setOpenedDays] = useState<number[]>([]);
 
   // Sample calendar with some example content
+  const getDoorImages = (day: number) => {
+    // All days 1-12 have custom images
+    if (day > 12) return { front_image_url: null, front_hover_image_url: null };
+    return {
+      front_image_url: `/images/day${day}-front.png`,
+      front_hover_image_url: `/images/day${day}-front-hover.png`,
+    };
+  };
+
   const sampleDoors = useMemo(() => Array.from({
-    length: 24
-  }, (_, i) => ({
-    day_number: i + 1,
-    content_text: ["🎄 Welcome to Advent! Let the countdown begin!", "❄️ May your day sparkle like fresh snow!", "🎁 The best gift is time spent with loved ones", "⭐ Make a wish upon the Christmas star", "🕯️ Light a candle, spread some warmth", "🦌 Rudolph says hello!", "🍪 Time for cookies and hot cocoa!", "🎵 Sing your favorite Christmas carol", "❤️ Share kindness with someone today", "🌟 You're on the nice list!", "🎅 Ho ho ho! Keep the spirit alive!", "🔔 Jingle all the way!", "🎄 Halfway through! Keep the magic going!", "💝 Wrap someone in a warm hug", "☃️ Build a snowman (real or imaginary!)", "🎶 Dance to festive tunes", "🌲 Take a moment to appreciate nature", "💫 Make someone smile today", "🍫 Treat yourself to something sweet", "📖 Share your favorite holiday memory", "🎀 The prettiest bow is made of love", "✨ Magic is in the air!", "🌙 Christmas Eve is almost here!", "🎄 Merry Christmas! 🎄\n\nMay your heart be filled with joy and your home with love!"][i]
-  })), []);
+    length: 12
+  }, (_, i) => {
+    const day = i + 1;
+    const images = getDoorImages(day);
+    return {
+      day_number: day,
+      content_text: ["🎄 Welcome to Advent! Let the countdown begin!", "❄️ May your day sparkle like fresh snow!", "🎁 The best gift is time spent with loved ones", "⭐ Make a wish upon the Christmas star", "🕯️ Light a candle, spread some warmth", "🦌 Rudolph says hello!", "🍪 Time for cookies and hot cocoa!", "🎵 Sing your favorite Christmas carol", "❤️ Share kindness with someone today", "🌟 You're on the nice list!", "🎅 Ho ho ho! Keep the spirit alive!", "🔔 Jingle all the way!"][i],
+      ...images,
+    };
+  }), []);
 
   // In preview mode, all days are "unlocked"
   const unlockedDays = Array.from({
-    length: 24
+    length: 12
   }, (_, i) => i + 1);
   const handleOpenDoor = (day: number) => {
     if (!openedDays.includes(day)) {

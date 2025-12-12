@@ -6,6 +6,8 @@ interface DoorData {
   content_image_url?: string | null;
   content_link?: string | null;
   background_color?: string | null;
+  front_image_url?: string | null;
+  front_hover_image_url?: string | null;
 }
 
 interface CalendarGridProps {
@@ -41,6 +43,8 @@ export const CalendarGrid = ({
               imageUrl: doorData?.content_image_url,
               link: doorData?.content_link,
             }}
+            frontImageUrl={doorData?.front_image_url ?? null}
+            frontHoverImageUrl={doorData?.front_hover_image_url ?? null}
             onOpen={onOpenDoor}
             previewMode={previewMode}
           />

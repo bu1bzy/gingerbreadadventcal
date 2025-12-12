@@ -14,6 +14,8 @@ interface AdventDoorProps {
   isUnlocked: boolean;
   isOpened: boolean;
   content?: DoorContent;
+  frontImageUrl?: string | null;
+  frontHoverImageUrl?: string | null;
   onOpen?: (day: number) => void;
   previewMode?: boolean;
 }
@@ -23,6 +25,8 @@ export const AdventDoor = ({
   isUnlocked, 
   isOpened, 
   content,
+  frontImageUrl,
+  frontHoverImageUrl,
   onOpen,
   previewMode = false
 }: AdventDoorProps) => {
@@ -63,71 +67,51 @@ export const AdventDoor = ({
           disabled={!isUnlocked && !previewMode}
           className={cn(
             "flip-card-inner w-full h-full relative",
-            (isFlipped || isOpened) && "flipped"
+            (isFlipped || isOpened) && "flipped",
+            "group" // enable group-hover for child image swapping
           )}
         >
           {/* Front of door */}
           <div
             className={cn(
-              "flip-card-front absolute inset-0 rounded-xl door-shadow transition-all duration-300",
-              "flex items-center justify-center overflow-hidden",
-              "border-4 border-christmas-gold/30",
-              getDoorColor(),
+              "flip-card-front absolute inset-0 overflow-hidden",
               isUnlocked || previewMode 
-                ? "cursor-pointer hover:scale-105 hover:border-christmas-gold" 
+                ? "cursor-pointer hover:scale-105" 
                 : "cursor-not-allowed opacity-70"
             )}
           >
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={cn(
-                "font-display text-2xl md:text-3xl lg:text-4xl font-bold",
-                isUnlocked || previewMode ? "text-christmas-snow" : "text-christmas-snow/60"
-              )}>
-                {day}
-              </span>
-              
-              <div className="mt-1">
-                {!isUnlocked && !previewMode ? (
-                  <Lock className="w-4 h-4 text-christmas-snow/50" />
-                ) : (
-                  <Star className="w-4 h-4 text-christmas-gold animate-twinkle" />
-                )}
-              </div>
-            </div>
-
-            {(isUnlocked || previewMode) && (
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-full bg-christmas-gold/30" />
+            {/* render optional front images as background layers; text/icons remain above */}
+            {frontImageUrl && (
+              <img
+                src={frontImageUrl}
+                alt={`Day ${day} front`}
+                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-0"
+              />
             )}
-            
-            <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-christmas-gold/40" />
-            <div className="absolute bottom-1 left-1 w-2 h-2 rounded-full bg-christmas-gold/40" />
+
+            {frontHoverImageUrl && (
+              <img
+                src={frontHoverImageUrl}
+                alt={`Day ${day} front hover`}
+                className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              />
+            )}
           </div>
 
           {/* Back of door (revealed content preview) */}
           <div
             className={cn(
-              "flip-card-back absolute inset-0 rounded-xl door-shadow",
-              "flex items-center justify-center overflow-hidden",
-              "border-4 border-christmas-gold/50",
-              "bg-christmas-green cursor-pointer"
+              "flip-card-back absolute inset-0 overflow-hidden"
             )}
           >
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
-              {displayContent.imageUrl ? (
-                <img 
-                  src={displayContent.imageUrl} 
-                  alt={`Day ${day}`}
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              ) : (
-                <>
-                  <Gift className="w-6 h-6 text-christmas-gold mb-1" />
-                  <span className="font-display text-lg text-christmas-snow">
-                    Day {day}
-                  </span>
-                </>
-              )}
-            </div>
+            {/* Show hover image as the back of door */}
+            {frontHoverImageUrl && (
+              <img
+                src={frontHoverImageUrl}
+                alt={`Day ${day} back`}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
           </div>
         </button>
       </div>
