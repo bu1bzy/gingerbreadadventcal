@@ -176,7 +176,7 @@ Doors unlock at midnight!</p>
         {/* Sample Calendar */}
         <section className="px-4 py-[5px]">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-8 flex items-center justify-center gap-2">
+            <div className="text-center mb-8 flex items-center justify-center gap-2 flex-wrap">
               <button
                 onClick={() => setEditMode(!editMode)}
                 className="inline-flex items-center gap-2 px-3 py-1 bg-christmas-red text-white rounded text-sm hover:bg-christmas-red-light transition"
@@ -184,6 +184,17 @@ Doors unlock at midnight!</p>
                 <Edit2 className="w-4 h-4" />
                 {editMode ? 'Done Editing' : 'Edit Gifts'}
               </button>
+              {editMode && (
+                <button
+                  onClick={() => {
+                    setSaveStatus('✓ All gifts saved!');
+                    setTimeout(() => setSaveStatus(''), 2000);
+                  }}
+                  className="inline-flex items-center gap-2 px-3 py-1 bg-christmas-green text-white rounded text-sm hover:bg-christmas-green-light transition"
+                >
+                  💾 Save All
+                </button>
+              )}
               {saveStatus && <div className="text-sm text-christmas-green font-medium">{saveStatus}</div>}
             </div>
             
