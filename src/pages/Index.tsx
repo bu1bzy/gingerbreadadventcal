@@ -171,7 +171,7 @@ Doors unlock at midnight!</p>
         {/* Sample Calendar */}
         <section className="px-4 py-[5px]">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-8 flex items-center justify-center gap-2">
+            {/* <div className="text-center mb-8 flex items-center justify-center gap-2">
               <button
                 onClick={() => setEditMode(!editMode)}
                 className="inline-flex items-center gap-2 px-3 py-1 bg-christmas-red text-white rounded text-sm hover:bg-christmas-red-light transition"
@@ -179,28 +179,28 @@ Doors unlock at midnight!</p>
                 <Edit2 className="w-4 h-4" />
                 {editMode ? 'Done Editing' : 'Edit Gifts'}
               </button>
-            </div>
+            </div> */}
             
             <div className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-xl border border-christmas-gold/20 p-4 md:p-8 christmas-glow">
               <div className="mb-4 flex items-center justify-center gap-4 flex-wrap">
-                <label className="inline-flex items-center gap-2 font-body text-sm">
+                {/* <label className="inline-flex items-center gap-2 font-body text-sm">
                   <input type="checkbox" checked={simulate} onChange={e => setSimulate(e.target.checked)} />
                   <span>Simulate date</span>
-                </label>
-                <input
+                </label> */}
+                {/* <input
                   type="date"
                   value={simDate}
                   onChange={e => setSimDate(e.target.value)}
                   className="border rounded px-2 py-1 text-sm"
                   disabled={!simulate}
-                />
-                <div className="text-sm text-muted-foreground">(Timezone: {timezone})</div>
+                /> */}
+                <div className="text-sm text-muted-foreground">(Detected Timezone: {timezone})</div>
                 {/* Debug: show computed unlocked days for clarity */}
-                <div className="w-full text-center mt-2">
+                {/* <div className="w-full text-center mt-2">
                   <div className="inline-block bg-muted/20 px-3 py-1 rounded text-sm">
                     Computed unlocked days: {unlockedDays.length > 0 ? unlockedDays.join(', ') : 'none'}
                   </div>
-                </div>
+                </div> */}
               </div>
 
               <CalendarGrid doors={sampleDoors} unlockedDays={unlockedDays} openedDays={openedDays} onOpenDoor={handleOpenDoor} previewMode={false} />
