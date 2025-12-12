@@ -15,6 +15,7 @@ const Index = () => {
   const [editImage, setEditImage] = useState<string | null>(null);
   const [editLink, setEditLink] = useState<string | null>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<string>('');
 
   // Sample door texts (editable state)
   const defaultTexts = [
@@ -130,6 +131,10 @@ const Index = () => {
       const newLinks = [...doorLinks];
       newLinks[editingDay - 1] = editLink;
       setDoorLinks(newLinks);
+      
+      setSaveStatus(`✓ Day ${editingDay} saved!`);
+      setTimeout(() => setSaveStatus(''), 2000);
+      
       setEditingDay(null);
       setEditText('');
       setEditImage(null);
@@ -179,6 +184,7 @@ Doors unlock at midnight!</p>
                 <Edit2 className="w-4 h-4" />
                 {editMode ? 'Done Editing' : 'Edit Gifts'}
               </button>
+              {saveStatus && <div className="text-sm text-christmas-green font-medium">{saveStatus}</div>}
             </div>
             
             <div className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-xl border border-christmas-gold/20 p-4 md:p-8 christmas-glow">

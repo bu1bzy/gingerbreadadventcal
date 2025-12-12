@@ -64,26 +64,33 @@ export const loadAllImages = async (): Promise<(string | null)[]> => {
   return new Promise((resolve, reject) => {
     const transaction = database.transaction([STORE_NAME], 'readonly');
     const store = transaction.objectStore(STORE_NAME);
-    const request = store.getAll();
+    const images: (string | null)[] = Array(12).fill(null);
     
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => {
-      const images: (string | null)[] = Array(12).fill(null);
-      const data = request.result;
-      // Note: getAll returns values only, not keys, so we need a different approach
+    const keysRequest = store.getAllKeys();
+    
+    keysRequest.onerror = () => reject(keysRequest.error);
+    keysRequest.onsuccess = () => {
+      const keys = keysRequest.result;
+      let completed = 0;
       
-      // Use getAllKeys and getAll together
-      const keysRequest = store.getAllKeys();
-      keysRequest.onsuccess = () => {
-        const keys = keysRequest.result;
-        keys.forEach((key, index) => {
-          const dayNum = parseInt((key as string).replace('day', ''));
-          if (dayNum >= 1 && dayNum <= 12) {
-            images[dayNum - 1] = data[index];
-          }
-        });
+      if (keys.length === 0) {
         resolve(images);
-      };
+        return;
+      }
+      
+      keys.forEach((key) => {
+        const getRequest = store.get(key);
+        getRequest.onsuccess = () => {
+          const dayNum = parseInt((key as string).replace('day', ''));
+          if (dayNum >= 1 && dayNum <= 12 && getRequest.result) {
+            images[dayNum - 1] = getRequest.result;
+          }
+          completed++;
+          if (completed === keys.length) {
+            resolve(images);
+          }
+        };
+      });
     };
   });
 };
