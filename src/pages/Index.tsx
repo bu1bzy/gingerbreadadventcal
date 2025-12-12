@@ -6,6 +6,7 @@ import { CalendarGrid } from '@/components/CalendarGrid';
 import { Button } from '@/components/ui/button';
 import { Gift, Sparkles, Calendar, Share2, Edit2, X } from 'lucide-react';
 import { useTimezone, getUnlockedDays } from '@/hooks/useTimezone';
+import { saveImage, loadAllImages } from '@/lib/storageDB';
 const Index = () => {
   const [openedDays, setOpenedDays] = useState<number[]>([]);
   const [editMode, setEditMode] = useState(false);
@@ -13,6 +14,7 @@ const Index = () => {
   const [editText, setEditText] = useState('');
   const [editImage, setEditImage] = useState<string | null>(null);
   const [editLink, setEditLink] = useState<string | null>(null);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Sample door texts (editable state)
   const defaultTexts = [
@@ -35,26 +37,42 @@ const Index = () => {
     return saved ? JSON.parse(saved) : defaultTexts;
   });
   const [doorImages, setDoorImages] = useState<(string | null)[]>(() => {
-    const saved = localStorage.getItem('doorImages');
-    return saved ? JSON.parse(saved) : Array(12).fill(null);
+    return Array(12).fill(null);
   });
   const [doorLinks, setDoorLinks] = useState<(string | null)[]>(() => {
     const saved = localStorage.getItem('doorLinks');
     return saved ? JSON.parse(saved) : Array(12).fill(null);
   });
 
-  // Save to localStorage whenever edits change
+  // Load images from IndexedDB on mount
+  useEffect(() => {
+    loadAllImages().then(images => {
+      setDoorImages(images);
+      setImagesLoaded(true);
+    }).catch(err => {
+      console.error('Failed to load images:', err);
+      setImagesLoaded(true);
+    });
+  }, []);
+
+  // Save to localStorage whenever texts or links change
   useEffect(() => {
     localStorage.setItem('doorTexts', JSON.stringify(doorTexts));
   }, [doorTexts]);
 
   useEffect(() => {
-    localStorage.setItem('doorImages', JSON.stringify(doorImages));
-  }, [doorImages]);
-
-  useEffect(() => {
     localStorage.setItem('doorLinks', JSON.stringify(doorLinks));
   }, [doorLinks]);
+
+  // Save images to IndexedDB whenever they change
+  useEffect(() => {
+    if (!imagesLoaded) return; // Don't save until we've loaded from DB
+    doorImages.forEach((image, index) => {
+      saveImage(index + 1, image).catch(err => {
+        console.error(`Failed to save image for day ${index + 1}:`, err);
+      });
+    });
+  }, [doorImages, imagesLoaded]);
 
   // Sample calendar with some example content
   const getDoorImages = (day: number) => {
