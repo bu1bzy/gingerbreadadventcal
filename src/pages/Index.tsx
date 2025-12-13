@@ -196,6 +196,28 @@ Doors unlock at midnight!</p>
                 >
                   Export Gifts JSON
                 </button>
+                <button
+                  onClick={() => {
+                    const items = Array.from({ length: 12 }, (_, i) => ({
+                      day_number: i + 1,
+                      content_text: doorTexts[i] ?? null,
+                      content_image_url: doorImages[i] ?? null,
+                      content_link: doorLinks[i] ?? null,
+                    }));
+                    const ts = `export const defaultGifts = ${JSON.stringify(items, null, 2)};\n`;
+                    navigator.clipboard.writeText(ts).then(() => {
+                      setSaveStatus('Copied defaultGifts to clipboard');
+                      setTimeout(() => setSaveStatus(''), 2000);
+                    }).catch(err => {
+                      console.error('Failed to copy:', err);
+                      setSaveStatus('Failed to copy to clipboard');
+                      setTimeout(() => setSaveStatus(''), 2000);
+                    });
+                  }}
+                  className="px-2 py-1 bg-christmas-red text-white rounded text-sm hover:bg-christmas-red/80 transition"
+                >
+                  Copy TS defaultGifts
+                </button>
               </div>
             </div>
             
