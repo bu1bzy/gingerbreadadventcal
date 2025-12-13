@@ -11,6 +11,8 @@ const Index = () => {
   const [openedDays, setOpenedDays] = useState<number[]>([]);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string>('');
+  const [simulate, setSimulate] = useState(false);
+  const [simDate, setSimDate] = useState(() => new Date().toISOString().slice(0, 10));
 
   // Sample door texts (editable state)
   const defaultTexts = [
@@ -121,7 +123,13 @@ const Index = () => {
   // Determine unlocked days using the calendar timezone so preview reflects real unlock dates
   const { timezone } = useTimezone();
 
-  const unlockedDays = getUnlockedDays(timezone);
+  const unlockedDays = (() => {
+    if (simulate) {
+      const d = new Date(simDate + 'T00:00:00');
+      return getUnlockedDays(timezone, d);
+    }
+    return getUnlockedDays(timezone);
+  })();
   const handleOpenDoor = (day: number) => {
     if (!openedDays.includes(day)) {
       setOpenedDays(prev => [...prev, day]);
@@ -165,6 +173,17 @@ Doors unlock at midnight!</p>
             
             <div className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-xl border border-christmas-gold/20 p-4 md:p-8 christmas-glow">
               <div className="mb-4 flex items-center justify-center gap-4 flex-wrap">
+                <label className="inline-flex items-center gap-2 font-body text-sm">
+                  <input type="checkbox" checked={simulate} onChange={e => setSimulate(e.target.checked)} />
+                  <span>Simulate date</span>
+                </label>
+                <input
+                  type="date"
+                  value={simDate}
+                  onChange={e => setSimDate(e.target.value)}
+                  className="border rounded px-2 py-1 text-sm"
+                  disabled={!simulate}
+                />
                 <div className="text-sm text-muted-foreground">(Timezone: {timezone})</div>
                 {/* Debug: show computed unlocked days for clarity */}
                 <div className="w-full text-center mt-2">
