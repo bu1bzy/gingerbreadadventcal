@@ -174,7 +174,29 @@ Doors unlock at midnight!</p>
         <section className="px-4 py-[5px]">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-8 flex items-center justify-center gap-2 flex-wrap">
-              {saveStatus && <div className="text-sm text-christmas-green font-medium">{saveStatus}</div>}
+              <div className="flex gap-2 items-center">
+                {saveStatus && <div className="text-sm text-christmas-green font-medium">{saveStatus}</div>}
+                <button
+                  onClick={() => {
+                    const items = Array.from({ length: 12 }, (_, i) => ({
+                      day_number: i + 1,
+                      content_text: doorTexts[i] ?? null,
+                      content_image_url: doorImages[i] ?? null,
+                      content_link: doorLinks[i] ?? null,
+                    }));
+                    const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'gifts-export.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="px-2 py-1 bg-christmas-gold text-white rounded text-sm hover:bg-christmas-gold/80 transition"
+                >
+                  Export Gifts JSON
+                </button>
+              </div>
             </div>
             
             <div className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-xl border border-christmas-gold/20 p-4 md:p-8 christmas-glow">
