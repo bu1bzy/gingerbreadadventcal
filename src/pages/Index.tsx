@@ -4,16 +4,11 @@ import { Snowfall } from '@/components/Snowfall';
 import { Header } from '@/components/Header';
 import { CalendarGrid } from '@/components/CalendarGrid';
 import { Button } from '@/components/ui/button';
-import { Gift, Sparkles, Calendar, Share2, Edit2, X } from 'lucide-react';
+import { Gift, Sparkles, Calendar, Share2 } from 'lucide-react';
 import { useTimezone, getUnlockedDays } from '@/hooks/useTimezone';
 import { saveImage, loadAllImages } from '@/lib/storageDB';
 const Index = () => {
   const [openedDays, setOpenedDays] = useState<number[]>([]);
-  const [editMode, setEditMode] = useState(false);
-  const [editingDay, setEditingDay] = useState<number | null>(null);
-  const [editText, setEditText] = useState('');
-  const [editImage, setEditImage] = useState<string | null>(null);
-  const [editLink, setEditLink] = useState<string | null>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string>('');
 
@@ -66,14 +61,38 @@ const Index = () => {
   }, [doorLinks]);
 
   // Save images to IndexedDB whenever they change
+  const saveAllGifts = async () => {
+    try {
+      localStorage.setItem('doorTexts', JSON.stringify(doorTexts));
+      localStorage.setItem('doorLinks', JSON.stringify(doorLinks));
+      // Save images via IndexedDB helper
+      for (let i = 0; i < doorImages.length; i++) {
+        await saveImage(i + 1, doorImages[i]);
+      }
+      setSaveStatus('✓ All gifts saved!');
+      setTimeout(() => setSaveStatus(''), 2000);
+    } catch (err) {
+      console.error('Failed to save gifts:', err);
+      setSaveStatus('Failed to save gifts');
+      setTimeout(() => setSaveStatus(''), 2000);
+    }
+  };
+
   useEffect(() => {
     if (!imagesLoaded) return; // Don't save until we've loaded from DB
+    // Save images to IndexedDB whenever they change
     doorImages.forEach((image, index) => {
       saveImage(index + 1, image).catch(err => {
         console.error(`Failed to save image for day ${index + 1}:`, err);
       });
     });
   }, [doorImages, imagesLoaded]);
+
+  // Auto-save all gifts once images have loaded (ensures uploaded images are persisted)
+  useEffect(() => {
+    if (!imagesLoaded) return;
+    saveAllGifts();
+  }, [imagesLoaded]);
 
   // Sample calendar with some example content
   const getDoorImages = (day: number) => {
@@ -120,34 +139,9 @@ const Index = () => {
     }
   };
 
-  const handleSaveEdit = () => {
-    if (editingDay !== null) {
-      const newTexts = [...doorTexts];
-      newTexts[editingDay - 1] = editText;
-      setDoorTexts(newTexts);
-      const newImages = [...doorImages];
-      newImages[editingDay - 1] = editImage;
-      setDoorImages(newImages);
-      const newLinks = [...doorLinks];
-      newLinks[editingDay - 1] = editLink;
-      setDoorLinks(newLinks);
-      
-      setSaveStatus(`✓ Day ${editingDay} saved!`);
-      setTimeout(() => setSaveStatus(''), 2000);
-      
-      setEditingDay(null);
-      setEditText('');
-      setEditImage(null);
-      setEditLink(null);
-    }
-  };
 
-  const openEditDialog = (day: number) => {
-    setEditingDay(day);
-    setEditText(doorTexts[day - 1]);
-    setEditImage(doorImages[day - 1] ?? null);
-    setEditLink(doorLinks[day - 1] ?? null);
-  };
+
+
   return <div className="min-h-screen bg-background relative overflow-hidden">
       <Snowfall />
       
@@ -164,7 +158,7 @@ const Index = () => {
         {/* Hero Section */}
         <section className="text-center px-4 md:py-[4px] py-[10px]">
           <div className="max-w-4xl mx-auto">
-            <h1 className="font-display lg:text-8xl mb-6 snow-text animate-fade-in text-3xl text-secondary md:text-4xl">✨Advent Calendar✨</h1>
+            <h1 className="font-display lg:text-8xl mb-6 snow-text animate-fade-in text-3xl text-christmas-red md:text-4xl">✨Advent Calendar✨</h1>
             <p style={{
             animationDelay: '0.1s'
           }} className="font-body text-foreground/80 max-w-2xl mx-auto mb-8 animate-fade-in md:text-xl text-lg">Behind each door is a surprise awaiting!
@@ -177,24 +171,6 @@ Doors unlock at midnight!</p>
         <section className="px-4 py-[5px]">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-8 flex items-center justify-center gap-2 flex-wrap">
-              <button
-                onClick={() => setEditMode(!editMode)}
-                className="inline-flex items-center gap-2 px-3 py-1 bg-christmas-red text-white rounded text-sm hover:bg-christmas-red-light transition"
-              >
-                <Edit2 className="w-4 h-4" />
-                {editMode ? 'Done Editing' : 'Edit Gifts'}
-              </button>
-              {editMode && (
-                <button
-                  onClick={() => {
-                    setSaveStatus('✓ All gifts saved!');
-                    setTimeout(() => setSaveStatus(''), 2000);
-                  }}
-                  className="inline-flex items-center gap-2 px-3 py-1 bg-christmas-green text-white rounded text-sm hover:bg-christmas-green-light transition"
-                >
-                  💾 Save All
-                </button>
-              )}
               {saveStatus && <div className="text-sm text-christmas-green font-medium">{saveStatus}</div>}
             </div>
             
@@ -222,107 +198,8 @@ Doors unlock at midnight!</p>
 
               <CalendarGrid doors={sampleDoors} unlockedDays={unlockedDays} openedDays={openedDays} onOpenDoor={handleOpenDoor} previewMode={false} />
 
-              {/* Edit Gift Modal */}
-              {editMode && editingDay && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                  <div className="bg-card rounded-lg p-6 max-w-md w-full mx-4 border border-christmas-gold/30">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-2xl font-display text-christmas-red">Edit Day {editingDay}</h2>
-                      <button
-                        onClick={() => setEditingDay(null)}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-                    <label className="block text-sm font-medium mb-1">Gift text</label>
-                    <textarea
-                      value={editText}
-                      onChange={e => setEditText(e.target.value)}
-                      className="w-full h-24 border rounded px-3 py-2 mb-3 font-body text-sm resize-none"
-                      placeholder="Enter gift text..."
-                    />
 
-                    <label className="block text-sm font-medium mb-1">Image (optional)</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={e => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            setEditImage(event.target?.result as string);
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      className="w-full border rounded px-3 py-2 mb-3 text-sm"
-                    />
 
-                    <label className="block text-sm font-medium mb-1">Link (optional)</label>
-                    <div className="flex gap-2 mb-3">
-                      <input
-                        type="text"
-                        value={editLink ?? ''}
-                        onChange={e => setEditLink(e.target.value || null)}
-                        placeholder="https://example.com or /internal/path"
-                        className="flex-1 border rounded px-3 py-2 text-sm"
-                      />
-                      <button
-                        onClick={() => {
-                          // generate QR from link using qrserver
-                          if (editLink) {
-                            const qr = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(editLink)}`;
-                            setEditImage(qr);
-                          }
-                        }}
-                        disabled={!editLink}
-                        className="px-3 py-2 bg-christmas-gold text-white rounded text-sm hover:brightness-95 disabled:opacity-50"
-                      >
-                        Generate QR
-                      </button>
-                    </div>
-
-                    {editImage && (
-                      <div className="mb-3">
-                        <label className="block text-sm font-medium mb-1">Image preview</label>
-                        <img src={editImage} alt="preview" className="w-full h-auto rounded shadow-sm" />
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleSaveEdit}
-                        className="flex-1 px-4 py-2 bg-christmas-green text-white rounded hover:bg-christmas-green-light transition font-body"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingDay(null)}
-                        className="flex-1 px-4 py-2 bg-muted text-foreground rounded hover:bg-muted/80 transition font-body"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Edit Mode: Show Edit Buttons on Each Day */}
-              {editMode && (
-                <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 px-4">
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map(day => (
-                    <button
-                      key={day}
-                      onClick={() => openEditDialog(day)}
-                      className="px-2 py-1 bg-christmas-gold/20 hover:bg-christmas-gold/40 border border-christmas-gold/50 rounded text-sm font-body transition"
-                    >
-                      Edit Day {day}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </section>
