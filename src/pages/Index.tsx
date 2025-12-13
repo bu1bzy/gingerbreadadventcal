@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Gift, Sparkles, Calendar, Share2 } from 'lucide-react';
 import { useTimezone, getUnlockedDays } from '@/hooks/useTimezone';
 import { saveImage, loadAllImages } from '@/lib/storageDB';
+import { defaultGifts } from '@/data/gifts';
 const Index = () => {
   const [openedDays, setOpenedDays] = useState<number[]>([]);
   const [imagesLoaded, setImagesLoaded] = useState(false);
@@ -32,14 +33,19 @@ const Index = () => {
 
   const [doorTexts, setDoorTexts] = useState(() => {
     const saved = localStorage.getItem('doorTexts');
-    return saved ? JSON.parse(saved) : defaultTexts;
+    if (saved) return JSON.parse(saved);
+    // Use defaultGifts if present, otherwise defaultTexts
+    return defaultGifts.map((g, i) => g.content_text ?? defaultTexts[i]);
   });
   const [doorImages, setDoorImages] = useState<(string | null)[]>(() => {
-    return Array(12).fill(null);
+    const saved = localStorage.getItem('doorImages');
+    if (saved) return JSON.parse(saved);
+    return defaultGifts.map(g => g.content_image_url ?? null);
   });
   const [doorLinks, setDoorLinks] = useState<(string | null)[]>(() => {
     const saved = localStorage.getItem('doorLinks');
-    return saved ? JSON.parse(saved) : Array(12).fill(null);
+    if (saved) return JSON.parse(saved);
+    return defaultGifts.map(g => g.content_link ?? null);
   });
 
   // Load images from IndexedDB on mount
