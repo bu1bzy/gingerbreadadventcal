@@ -20,7 +20,7 @@ export const defaultGifts = [
   {
     day_number: 4,
     content_text: "A snowman for you.",
-    imageName: "day4.png",
+    imageName: "day4.jpg",
     content_link: null,
   },
   {
