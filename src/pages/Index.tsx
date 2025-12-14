@@ -93,6 +93,36 @@ Doors unlock at midnight!</p>
             <div className="text-center mb-8 flex items-center justify-center gap-2 flex-wrap">
               <div className="flex gap-2 items-center">
                 {saveStatus && <div className="text-sm text-christmas-green font-medium">{saveStatus}</div>}
+                <button
+                  onClick={() => {
+                    const blob = new Blob([JSON.stringify(doorGifts, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'gifts-export.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="px-2 py-1 bg-christmas-gold text-white rounded text-sm hover:bg-christmas-gold/80 transition"
+                >
+                  Export Gifts JSON
+                </button>
+                <button
+                  onClick={() => {
+                    const ts = `export const defaultGifts = ${JSON.stringify(doorGifts, null, 2)};\n`;
+                    navigator.clipboard.writeText(ts).then(() => {
+                      setSaveStatus('Copied defaultGifts to clipboard');
+                      setTimeout(() => setSaveStatus(''), 2000);
+                    }).catch(err => {
+                      console.error('Failed to copy:', err);
+                      setSaveStatus('Failed to copy to clipboard');
+                      setTimeout(() => setSaveStatus(''), 2000);
+                    });
+                  }}
+                  className="px-2 py-1 bg-christmas-red text-white rounded text-sm hover:bg-christmas-red/80 transition"
+                >
+                  Copy TS defaultGifts
+                </button>
               </div>
             </div>
             
