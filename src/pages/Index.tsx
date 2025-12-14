@@ -15,92 +15,14 @@ const Index = () => {
   const [simulate, setSimulate] = useState(false);
   const [simDate, setSimDate] = useState(() => new Date().toISOString().slice(0, 10));
 
-  // Sample door texts (editable state)
-  const defaultTexts = [
-    "🎄 Welcome to Advent! Let the countdown begin!",
-    "❄️ May your day sparkle like fresh snow!",
-    "🎁 The best gift is time spent with loved ones",
-    "⭐ Make a wish upon the Christmas star",
-    "🕯️ Light a candle, spread some warmth",
-    "🦌 Rudolph says hello!",
-    "🍪 Time for cookies and hot cocoa!",
-    "🎵 Sing your favorite Christmas carol",
-    "❤️ Share kindness with someone today",
-    "🌟 You're on the nice list!",
-    "🎅 Ho ho ho! Keep the spirit alive!",
-    "🔔 Jingle all the way!"
-  ];
-
-  const [doorTexts, setDoorTexts] = useState(() => {
-    const saved = localStorage.getItem('doorTexts');
+  // Use defaultGifts as the single source of truth for door content
+  const [doorGifts, setDoorGifts] = useState(() => {
+    const saved = localStorage.getItem('doorGifts');
     if (saved) return JSON.parse(saved);
-    // Use defaultGifts if present, otherwise defaultTexts
-    return defaultGifts.map((g, i) => g.content_text ?? defaultTexts[i]);
-  });
-  const [doorImages, setDoorImages] = useState<(string | null)[]>(() => {
-    const saved = localStorage.getItem('doorImages');
-    if (saved) return JSON.parse(saved);
-    return defaultGifts.map(g => g.content_image_url ?? null);
-  });
-  const [doorLinks, setDoorLinks] = useState<(string | null)[]>(() => {
-    const saved = localStorage.getItem('doorLinks');
-    if (saved) return JSON.parse(saved);
-    return defaultGifts.map(g => g.content_link ?? null);
+    return defaultGifts;
   });
 
-  // Load images from IndexedDB on mount
-  useEffect(() => {
-    loadAllImages().then(images => {
-      setDoorImages(images);
-      setImagesLoaded(true);
-    }).catch(err => {
-      console.error('Failed to load images:', err);
-      setImagesLoaded(true);
-    });
-  }, []);
 
-  // Save to localStorage whenever texts or links change
-  useEffect(() => {
-    localStorage.setItem('doorTexts', JSON.stringify(doorTexts));
-  }, [doorTexts]);
-
-  useEffect(() => {
-    localStorage.setItem('doorLinks', JSON.stringify(doorLinks));
-  }, [doorLinks]);
-
-  // Save images to IndexedDB whenever they change
-  const saveAllGifts = async () => {
-    try {
-      localStorage.setItem('doorTexts', JSON.stringify(doorTexts));
-      localStorage.setItem('doorLinks', JSON.stringify(doorLinks));
-      // Save images via IndexedDB helper
-      for (let i = 0; i < doorImages.length; i++) {
-        await saveImage(i + 1, doorImages[i]);
-      }
-      setSaveStatus('✓ All gifts saved!');
-      setTimeout(() => setSaveStatus(''), 2000);
-    } catch (err) {
-      console.error('Failed to save gifts:', err);
-      setSaveStatus('Failed to save gifts');
-      setTimeout(() => setSaveStatus(''), 2000);
-    }
-  };
-
-  useEffect(() => {
-    if (!imagesLoaded) return; // Don't save until we've loaded from DB
-    // Save images to IndexedDB whenever they change
-    doorImages.forEach((image, index) => {
-      saveImage(index + 1, image).catch(err => {
-        console.error(`Failed to save image for day ${index + 1}:`, err);
-      });
-    });
-  }, [doorImages, imagesLoaded]);
-
-  // Auto-save all gifts once images have loaded (ensures uploaded images are persisted)
-  useEffect(() => {
-    if (!imagesLoaded) return;
-    saveAllGifts();
-  }, [imagesLoaded]);
 
   // Sample calendar with some example content
   const getDoorImages = (day: number) => {
@@ -112,19 +34,14 @@ const Index = () => {
     };
   };
 
-  const sampleDoors = useMemo(() => Array.from({
-    length: 12
-  }, (_, i) => {
-    const day = i + 1;
+  const sampleDoors = useMemo(() => doorGifts.map((gift, i) => {
+    const day = gift.day_number;
     const images = getDoorImages(day);
     return {
-      day_number: day,
-      content_text: doorTexts[i],
-      content_image_url: doorImages[i] ?? null,
-      content_link: doorLinks[i] ?? null,
+      ...gift,
       ...images,
     };
-  }), [doorTexts, doorImages, doorLinks]);
+  }), [doorGifts]);
 
   // Determine unlocked days using the calendar timezone so preview reflects real unlock dates
   const { timezone } = useTimezone();
@@ -178,13 +95,7 @@ Doors unlock at midnight!</p>
                 {saveStatus && <div className="text-sm text-christmas-green font-medium">{saveStatus}</div>}
                 <button
                   onClick={() => {
-                    const items = Array.from({ length: 12 }, (_, i) => ({
-                      day_number: i + 1,
-                      content_text: doorTexts[i] ?? null,
-                      content_image_url: doorImages[i] ?? null,
-                      content_link: doorLinks[i] ?? null,
-                    }));
-                    const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+                    const blob = new Blob([JSON.stringify(doorGifts, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -198,13 +109,7 @@ Doors unlock at midnight!</p>
                 </button>
                 <button
                   onClick={() => {
-                    const items = Array.from({ length: 12 }, (_, i) => ({
-                      day_number: i + 1,
-                      content_text: doorTexts[i] ?? null,
-                      content_image_url: doorImages[i] ?? null,
-                      content_link: doorLinks[i] ?? null,
-                    }));
-                    const ts = `export const defaultGifts = ${JSON.stringify(items, null, 2)};\n`;
+                    const ts = `export const defaultGifts = ${JSON.stringify(doorGifts, null, 2)};\n`;
                     navigator.clipboard.writeText(ts).then(() => {
                       setSaveStatus('Copied defaultGifts to clipboard');
                       setTimeout(() => setSaveStatus(''), 2000);

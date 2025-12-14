@@ -3,7 +3,7 @@ import { AdventDoor } from './AdventDoor';
 interface DoorData {
   day_number: number;
   content_text?: string | null;
-  content_image_url?: string | null;
+  imageName?: string | null;
   content_link?: string | null;
   background_color?: string | null;
   front_image_url?: string | null;
@@ -40,7 +40,7 @@ export const CalendarGrid = ({
             isOpened={openedDays.includes(day)}
             content={{
               text: doorData?.content_text,
-              imageUrl: doorData?.content_image_url,
+              imageUrl: doorData?.imageName ? `/public/images/gifts/${doorData.imageName}` : null,
               link: doorData?.content_link,
             }}
             frontImageUrl={doorData?.front_image_url ?? null}
