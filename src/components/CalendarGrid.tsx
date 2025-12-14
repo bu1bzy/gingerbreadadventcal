@@ -40,7 +40,7 @@ export const CalendarGrid = ({
             isOpened={openedDays.includes(day)}
             content={{
               text: doorData?.content_text,
-              imageUrl: doorData?.imageName ? `/public/images/gifts/${doorData.imageName}` : null,
+              imageUrl: doorData?.imageName ? `/images/gifts/${doorData.imageName}` : null,
               link: doorData?.content_link,
             }}
             frontImageUrl={doorData?.front_image_url ?? null}
