@@ -138,7 +138,16 @@ Doors unlock at midnight!</p>
       {/* Footer */}
       <footer className="relative z-20 py-8 text-center text-muted-foreground font-body border-t border-border">
         <p className="flex items-center justify-center gap-2">
-          Made with <span className="text-christmas-red">❤️</span> for the holiday season
+          Made with <span className="text-christmas-red">❤️</span> by
+          <a
+            href="https://instagram.com/sad.frens"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-christmas-green hover:underline"
+          >
+            @sad.frens
+          </a>
+          for the holiday season
         </p>
       </footer>
     </div>;
