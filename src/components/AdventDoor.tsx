@@ -135,7 +135,7 @@ export const AdventDoor = ({
               />
             )}
             {displayContent.text && (
-              <p className="text-center font-body text-xs whitespace-pre-line leading-relaxed">
+              <p className="text-center font-body text-sm whitespace-pre-line leading-relaxed">
                 {displayContent.text}
               </p>
             )}
